@@ -18,6 +18,17 @@ const RegisterPage = () => {
         }else{
             alert('Register failed');
         }
+        // Cách 2 bên dưới cũng được
+        // try{
+        //     await fetch('http://localhost:4000/register', {
+        //         method: 'POST',
+        //         body: JSON.stringify({username, password}),
+        //         headers: {'Content-Type' : 'application/json'}
+        //     })
+        //     alert('Registration successfull. Now you can log in')
+        // }catch(e){
+        //     alert('Registration failed. Please try again later')
+        // }
     }
 
     return (
