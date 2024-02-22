@@ -1,12 +1,19 @@
 const express = require('express');
 const cors = require('cors');
+
 const mongoose = require('mongoose');
 const User = require('./models/User');
+const Post = require('./models/Post');
+
 const bcrypt = require('bcryptjs');
 const app = express();
 const port = 4000;
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+
+const multer = require('multer');
+const uploadMiddleware = multer({ dest: 'uploads/' });
+const fs = require('fs'); // fs : file system
 
 const salt = bcrypt.genSaltSync(10);
 const secret = 'vbwHV873GFB1cvaeve';
@@ -75,8 +82,34 @@ app.get('/profile', async (req, res) => {
 })
 
 app.post('/logout', (req, res) => {
-  res.cookie('token', '').json('ok');
+  res.cookie('token', '').json('ok'); // Nó sẽ xoá token cả ở reponse lẫn Cookie trong Application (dù ở request vẫn còn)
 })
+
+// do khi bấm createNewPost thì file ở Form Data trong Payload đang có dạng nhị phân nên ta phải gửi ảnh đang có vào thư mục uploads đã tạo ở api 
+// Giải pháp : dùng multer
+// do ta đang để trong Data gửi lên là file nên để trong single là file (nếu để tên khác và avatar thì đổi lên thành avatar) 
+// Sau khi bấm createNewPost thì tên các file rất lạ -> Ta phải đổi tên chúng
+app.post('/posts', uploadMiddleware.single('file'), async (req, res) => {
+  const {originalname, path} = req.file;
+  const parts = originalname.split('.'); // tạo 1 mảng có n phần tử trong originalname
+  const ext = parts[parts.length - 1]; // png hoặc webb
+  const newPath = path+'.'+ext;
+  fs.renameSync(path, newPath); // file được gửi vào thư mục uploads sẽ có dạng png (các file trước dù được gửi nhưng không có dạng png hoặc webb)
+  //res.json(req.file); // // trả về 1 object (có các attribute : filename, destination: "uploads/", originalname: "Screenshot (10).png", path: "uploads\\1621a2c1a9f30a92b901391f70627713", ...)
+  //res.json({files:req.file}); // trả về 1 object có tên là files (có các attribute : filename, destination: "uploads/", originalname: "Screenshot (10).png", path: "uploads\\1621a2c1a9f30a92b901391f70627713", ...)
+  //res.json(ext);// trả về 1 string : png
+
+  const {title, summary, content} = req.body; // Xem ở Payload
+  const postDoc = await Post.create({
+    title,
+    summary,
+    content,
+    cover: newPath
+  })
+  //res.json({ext});// trả về 1 object có 1 attribute là ext : png (Xem ở Preview)
+  //res.json({title, summary, content});// trả về 1 object có các attribute là title: ... , summary: ..., content: ... (Xem ở Preview)
+  res.json(postDoc); //trả về 1 object có các attribute là title, createdAt, updatedAt, ...
+});
 
 //nguyentuanhung123
 app.listen(port, () => {
