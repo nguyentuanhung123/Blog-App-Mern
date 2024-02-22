@@ -24,6 +24,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static(__dirname + '/uploads')); //Giúp hiển thị trên browser. Ví dụ: http://localhost:4000/uploads/1f98e8ae3846cb936790ce2fff4d7d30.png
 
 
 //connect mongoose database after creating User.js on models api
@@ -97,19 +98,44 @@ app.post('/posts', uploadMiddleware.single('file'), async (req, res) => {
   fs.renameSync(path, newPath); // file được gửi vào thư mục uploads sẽ có dạng png (các file trước dù được gửi nhưng không có dạng png hoặc webb)
   //res.json(req.file); // // trả về 1 object (có các attribute : filename, destination: "uploads/", originalname: "Screenshot (10).png", path: "uploads\\1621a2c1a9f30a92b901391f70627713", ...)
   //res.json({files:req.file}); // trả về 1 object có tên là files (có các attribute : filename, destination: "uploads/", originalname: "Screenshot (10).png", path: "uploads\\1621a2c1a9f30a92b901391f70627713", ...)
+
+  const {token} = req.cookies;
+
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if(err) throw err;
+      const {title, summary, content} = req.body; // Xem ở Payload
+      const postDoc = await Post.create({
+        title,
+        summary,
+        content,
+        cover: newPath,
+        author: info.id
+      })
+    res.json(postDoc);
+  })
   //res.json(ext);// trả về 1 string : png
 
-  const {title, summary, content} = req.body; // Xem ở Payload
-  const postDoc = await Post.create({
-    title,
-    summary,
-    content,
-    cover: newPath
-  })
+  // const {title, summary, content} = req.body; // Xem ở Payload
+  // const postDoc = await Post.create({
+  //   title,
+  //   summary,
+  //   content,
+  //   cover: newPath
+  // })
   //res.json({ext});// trả về 1 object có 1 attribute là ext : png (Xem ở Preview)
   //res.json({title, summary, content});// trả về 1 object có các attribute là title: ... , summary: ..., content: ... (Xem ở Preview)
-  res.json(postDoc); //trả về 1 object có các attribute là title, createdAt, updatedAt, ...
+  //res.json(postDoc); //trả về 1 object có các attribute là title, createdAt, updatedAt, ...
 });
+
+app.get('/posts', async (req, res) => {
+  //const posts = await Post.find();
+  //const posts = await Post.find().populate('author'); //Kết nối và xem tất cả thông tin của author bao gồm password, username, id
+  const posts = await Post.find()
+              .populate('author', ['username']) // chỉ trả về id và username
+              .sort({createAt: -1}) // cái nào mới nhất sẽ được để lên đầu
+              .limit(20) // chỉ hiện 20 cái Post mới nhất
+  res.json(posts);
+})
 
 //nguyentuanhung123
 app.listen(port, () => {

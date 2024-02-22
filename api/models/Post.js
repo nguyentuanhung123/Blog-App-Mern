@@ -6,8 +6,9 @@ const PostSchema = new Schema({
     summary: String,
     content: String,
     cover: String,
+    author: {type:Schema.Types.ObjectId, ref: 'User'},
 }, {
-    timestamps: true, //giúp chúng ta có thêm biến là thời gian cập nhật (Khi nào bài đăng được tạo - createAt, updateAt) 
+    timestamps: true, //giúp chúng ta có thêm biến là thời gian cập nhật (Khi nào bài đăng được tạo - createdAt, updatedAt) 
 });
 
 const PostModel = model('Post', PostSchema);

@@ -46,6 +46,7 @@ const CreatePostPage = () => {
         const response = await fetch('http://localhost:4000/posts', {
             method: 'POST',
             body: data,
+            credentials: 'include' // gửi cả cookie
         });
         //console.log('Info of Image or Post: ', await response.json()); // muốn xem ở console thì ta phải để ở dạng json
         //console.log(files);
@@ -55,7 +56,7 @@ const CreatePostPage = () => {
     }
 
     if(redirect){
-        <Navigate to={'/'}/>
+        return <Navigate to={'/'}/>
     }
 
     return (

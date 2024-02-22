@@ -1,16 +1,21 @@
-const Post = () => {
+import {format, formatISO9075} from 'date-fns';
+
+const Post = ({title, summary, cover, content, createdAt, author}) => {
     return (
         <div className='post'>
             <div className="image">
-              <img src="https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/2020-Chevrolet-Corvette-Stingray/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=960" alt=""/>
+              <img src={'http://localhost:4000/'+cover} alt=""/>
             </div>
             <div className="texts">
-              <h2>Full-house battery backup coming later this year</h2>
+              <h2>{title}</h2>
               <p className="info">
-                <span className="author">Dawid Paszko</span>
-                <time>2024-01-06 16:45</time>
+                <span className="author">{author.username}</span>
+                {/* 2024-02-22 18:07:16 */}
+                <time>{formatISO9075(new Date(createdAt))}</time>
+                {/* Feb 22, 2024 18:07 */}
+                {/* <time>{format(new Date(createdAt), 'MMM d, yyyy HH:mm')}</time> */}
               </p>
-              <p className='summary'>Today at its special launch event, ...</p>
+              <p className='summary'>{summary}</p>
             </div>
         </div>
     )
