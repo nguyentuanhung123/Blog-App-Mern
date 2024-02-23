@@ -8,12 +8,11 @@ const IndexPage = () => {
     useEffect(() => {
         fetch('http://localhost:4000/posts')
             .then((response) => {
-                response.json()
-            .then((posts) => {
+                response.json().then((posts) => {
                 //console.log(posts);
                 setPosts(posts)
+                })
             })
-        })
     }, [])
 
     return (

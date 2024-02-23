@@ -135,6 +135,12 @@ app.get('/posts', async (req, res) => {
               .sort({createAt: -1}) // cái nào mới nhất sẽ được để lên đầu
               .limit(20) // chỉ hiện 20 cái Post mới nhất
   res.json(posts);
+});
+
+app.get('/posts/:id', async (req, res) => {
+  const {id} = req.params; // req.params là 1 object chỉ chứa 1 attribute là id : '....' 
+  const postDoc = await Post.findById(id).populate('author', ['username']);
+  res.json(postDoc);
 })
 
 //nguyentuanhung123

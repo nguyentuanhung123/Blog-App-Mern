@@ -1,13 +1,18 @@
 import {format, formatISO9075} from 'date-fns';
+import { Link } from 'react-router-dom';
 
-const Post = ({title, summary, cover, content, createdAt, author}) => {
+const Post = ({_id, title, summary, cover, content, createdAt, author}) => {
     return (
         <div className='post'>
             <div className="image">
-              <img src={'http://localhost:4000/'+cover} alt=""/>
+              <Link to={`/posts/${_id}`}>
+                <img src={'http://localhost:4000/'+cover} alt=""/>
+              </Link>
             </div>
             <div className="texts">
-              <h2>{title}</h2>
+              <Link to={`/posts/${_id}`}>
+                <h2>{title}</h2>
+              </Link>
               <p className="info">
                 <span className="author">{author.username}</span>
                 {/* 2024-02-22 18:07:16 */}
