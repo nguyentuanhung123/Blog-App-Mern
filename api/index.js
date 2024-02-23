@@ -143,6 +143,39 @@ app.get('/posts/:id', async (req, res) => {
   res.json(postDoc);
 })
 
+app.put('/posts', uploadMiddleware.single('file'), async (req, res) => {
+  //res.json(req.file);
+  let newPath = null;
+  if(req.file){
+    const {originalname, path} = req.file;
+    const parts = originalname.split('.'); // tạo 1 mảng có n phần tử trong originalname
+    const ext = parts[parts.length - 1]; // png hoặc webb
+    newPath = path+'.'+ext;
+    fs.renameSync(path, newPath); // file được gửi vào thư mục uploads sẽ có dạng png (các file trước dù được gửi nhưng không có dạng png hoặc webb)
+  }
+
+  const {token} = req.cookies;
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if(err) throw err;
+    const {id, title, summary, content} = req.body; // Xem ở Payload
+      const postDoc = await Post.findById(id);
+      // do author là ObjectId nên ta phảu dùng JSON.stringify để có sụe so sánh tốt hơn
+      const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
+      if(!isAuthor){
+        return res.status(400).json('you are not the author');
+        // throw 'you are not the author';
+      }
+      await Post.findByIdAndUpdate(id, {
+        title, 
+        summary, 
+        content,
+        cover: newPath ? newPath : postDoc.cover,
+      });
+      //res.json({isAuthor, postDoc, info})
+      res.json(postDoc);
+  })
+})
+
 //nguyentuanhung123
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

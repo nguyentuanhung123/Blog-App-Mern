@@ -1,43 +1,55 @@
-//npm i react-quill
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import Editor from '../components/Editor';
+import { useEffect, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
+import Editor from "../components/Editor";
 
-const CreatePostPage = () => {
+const EditPostPage = () => {
+
+    const {id} = useParams();
 
     const [title, setTitle] = useState('');
     const [summary, setSummary] = useState('');
     const [content, setContent] = useState('');
     const [files, setFiles] = useState('');
-
     const [redirect, setRedirect] = useState(false);
 
-    const cretateNewPost = async(e) => {
-        // vì phải gửi cả ảnh nên thay vì gửi data dưới dạng JSON như bình thường , ta sẽ gửi dưới dạng Form Data;
+    useEffect(() => {
+       fetch('http://localhost:4000/posts/'+id)
+          .then((response) => {
+            response.json().then((postInfo) => {
+                setTitle(postInfo.title);
+                setContent(postInfo.content);
+                setSummary(postInfo.summary);
+            })
+          })
+    }, [])
+
+    const updatePost = async (e) => {
+        e.preventDefault();
         const data = new FormData(); // Xem ở Payload Network khi ta bấm gửi Data
         data.set('title', title);
         data.set('summary', summary);
         data.set('content', content);
-        data.set('file', files[0]); // do ở dạng List nên ta muốn chỉ chọn bức ảnh đầu tiên kể cả khi ta chọn nhiều
-        e.preventDefault();
+        data.set('id', id);
+        if(files?.[0]){
+            data.set('file', files?.[0]); // để dấu hỏi trong trường hợp đây không phải 1 mảng các file
+        }
         const response = await fetch('http://localhost:4000/posts', {
-            method: 'POST',
+            method: 'PUT',
             body: data,
-            credentials: 'include' // gửi cả cookie
+            credentials: 'include',
         });
-        //console.log('Info of Image or Post: ', await response.json()); // muốn xem ở console thì ta phải để ở dạng json
-        //console.log(files);
         if(response.ok){
             setRedirect(true);
         }
     }
 
     if(redirect){
-        return <Navigate to={'/'}/>
+        return <Navigate to={'/posts/'+id} />
     }
 
+
     return (
-        <form onSubmit={cretateNewPost}>
+        <form onSubmit={updatePost}>
             <input 
                 type="text" 
                 placeholder="Title"
@@ -52,10 +64,10 @@ const CreatePostPage = () => {
                 type="file" 
                 //value={files} -> Không được để value chỗ này vì nó sẽ báo lỗi
                 onChange={(e) => setFiles(e.target.files)}/>
-            <Editor content={content} setContent={setContent}/>
-            <button style={{marginTop: '5px'}}>Create Post</button>
+            <Editor setContent={setContent} content={content}/>
+            <button style={{marginTop: '5px'}}>Update Post</button>
         </form>
     )
 }
 
-export default CreatePostPage
+export default EditPostPage
